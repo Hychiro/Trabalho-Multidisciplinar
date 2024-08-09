@@ -46,7 +46,6 @@ class PorositiyProblem():
     # Exemplo de uso
    
     def settingEnviroment(self,timeT = 20):
-
         self.circle_matrix = self.create_circle_matrix(self.tamMatrixEmXY)
 
         self.h_x = 1 # distancia dos pontos da grid em y em 1mm

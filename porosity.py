@@ -35,7 +35,9 @@ def PermEff(S):
         lamb = 0.52#ajustavel, valor de lambda 
         krg = 0.7737#ajustavel, valor a permeabilidade inicial do gas
         krw = 0.2007#ajustavel, valor a permeabilidade inicial da agua
-        Swc = 0.10 #ajustavel, valor da saturação da agua conata no ambiente (menor valor de agua q pode existir)
+        # Swc = 0.10 #ajustavel, valor da saturação da agua conata no ambiente (menor valor de agua q pode existir)
+        Swc = 0.1219 #ajustavel, valor da saturação da agua conata no ambiente (menor valor de agua q pode existir)
+
         Sgr = 0.0 #fixo, valor da saturação do ar no ambiente, pode ser maior que 0, mas vamos deixar assim msm
         if S > Swc and S <= 1:
          Swe = (S-Swc)/(1-Swc-Sgr)
@@ -96,43 +98,56 @@ def up_S(S_past, k, vx, vy, dt, dx, dy, r):
                     S_new[i, j] = S_past[i, j] + S_new[i, j] * dt
     return S_new
 
-max_T, max_X, max_Y, r = 10000, 113, 113, 56.5
+max_T, max_X, max_Y, r = 5400, 113, 113, 56.5
 dt, dx, dy = 0.5, 1, 1
 # vx, vy = 0.012, 0.012
-k = 0.3302369
+# k = 0.3302369
+# k =0.71645
+# k = 0.59782
+# k = 0.43921
+k = 0.48458
 
 S = np.zeros((int(max_T/dt), int(max_X/dx), int(max_Y/dy)))
 # S[0, 40:60, 15:40] = 1
 # S[0, 56, 1] = 1
-S[0,50:60,1:5] = 1
+# S[0,50:60,1:3] = 1
 # S[0,50:60,1:5] = 0.1
-
-q = 2.0979020979e-6
-A = 0.00049087385
-valV = (q*k)/A
+S[0,56:59,1:2] = 1
+q = 1.11 * 10e-3
+# q = 8.0 * 10e-4
+# A = 0.00049087385
+# A = 0.00000153938
+# valV = (q*k)/A
 
 for t in range(1, S.shape[0]):
     vx,vy = vel_Field(S[t-1],k)
-    vx[50:60,1:5] = valV
-    vy[50:60,107:112] = valV
+    # vx[56,1] = q
+    # vy[56,112] = q
+    # vx[50:60,1:3] = q
+    # vy[50:60,107:112] = q
+    vx[55:60,1:3] = q
+    # vy[56:59,1:2] = 0
+    vx[55:60,110:112] = q
+    # vy[56:59,111:112] = 0
     S[t-1] = set_border(S[t-1], dx, dy, r)
     S[t] = up_S(S[t-1], k, vx, vy, dt, dx, dy, r)
     S[t-1] = clear_outside(S[t-1], dx, dy, r)
     # S[t, 40:60, 15:40] = 1
     # S[t, 56, 1] = 1
-    S[t,50:60,1:5] = 1
+    # S[t,50:60,1:3] = 1
+    S[t,55:60,1:3] = 1
     
 
 import imageio
 images = []
-for i in range(0,S.shape[0],100):
-    plt.imshow(S[i], cmap='viridis')
+for i in range(0,S.shape[0],1000):
+    plt.imshow(S[i], cmap='Greys')
     x_center, y_center = S.shape[1]/2, S.shape[2]/2
     circle = plt.Circle((x_center, y_center), r, color='r', fill=False)
     plt.gca().add_artist(circle)
     plt.title(f'Time = {i*dt}')
     plt.axis('off')
-    plt.savefig('porosity.png')
-    images.append(imageio.imread('porosity.png'))
+    plt.savefig(f'porosityTeste{i}.png')
+    images.append(imageio.imread(f'porosityTeste{i}.png'))
 imageio.mimsave('porosity.gif', images)
 
